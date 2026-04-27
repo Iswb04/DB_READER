@@ -1,10 +1,9 @@
-from TCC.IA.llm import gerar_sql, explicar
-from TCC.DB.create import conectar
-from TCC.IA.charts import gerar_grafico
-from TCC.IA.exports import salvar_csv
+from STORE_AI.llm import gerar_sql, explicar
+from DB.create import conectar
+from STORE_AI.charts import gerar_grafico
+from STORE_AI.exports import salvar_csv
 
 def rodar_pipeline(pergunta):
-    print("\nPergunta:", pergunta)
 
     # 1. IA gera SQL
     sql = gerar_sql(pergunta)
@@ -21,10 +20,18 @@ def rodar_pipeline(pergunta):
     con.close()
 
     # 3. Gera gráfico
-    df = gerar_grafico(colunas, dados)
+    question = input("Gerar gráfico? (S ou N): ").upper()
+    if question in ["SIM", "S"]:
+        df = gerar_grafico(colunas, dados)
+    else:
+        print("ok.")
 
-    # 4. Exporta CSV (opcional)
-    salvar_csv(df)
+    # 4. Exporta CSV
+    question2 = input("Exportar CSV? (S ou N): ").upper()
+    if question2 in ["SIM", "S"]:
+        salvar_csv(df)
+    else:
+        print("ok.")
 
     # 5. IA explica
     resposta = explicar(df)

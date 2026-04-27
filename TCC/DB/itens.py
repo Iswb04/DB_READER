@@ -1,4 +1,4 @@
-from TCC.DB.create import conectar
+from DB.create import conectar
 
 def inserir_item(produto, preco, quantidade):
     con = conectar()
@@ -10,15 +10,4 @@ def inserir_item(produto, preco, quantidade):
     """, (produto, preco, quantidade))
 
     con.commit()
-    con.close()
-
-def listar_itens():
-    con = conectar()
-    cursor = con.cursor()
-
-    cursor.execute("SELECT * FROM vendas")
-
-    for item in cursor.fetchall():
-        print(item)
-
     con.close()

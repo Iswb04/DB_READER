@@ -1,0 +1,13 @@
+TCC/
+│
+├── DB/
+│   ├── create.py # Criar DB
+│   └── itens.py  # Criar tabela "itens"
+│
+├── IA/
+│   └── llm.py	# IA (Ollama)
+|   ├── charts. # Gráficos
+|   └── exports.py # Salvar dados 
+│
+├── pipeline.py  #Fluxo de etapas
+└── main.py             
