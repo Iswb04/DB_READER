@@ -1,4 +1,4 @@
-from pipeline import rodar_pipeline
+from .pipeline import rodar_pipeline
 
 while True:
     pergunta = input("\nPergunta (ou 'sair'): ")

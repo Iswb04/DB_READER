@@ -1,7 +1,7 @@
-from STORE_AI.llm import gerar_sql, explicar
-from DB.create import conectar
-from STORE_AI.charts import gerar_grafico
-from STORE_AI.exports import salvar_csv
+from TCC.STORE_AI.llm import gerar_sql, explicar
+from TCC.DB.create import conectar
+from TCC.STORE_AI.charts import gerar_grafico
+from TCC.STORE_AI.exports import salvar_csv
 
 def rodar_pipeline(pergunta):
 

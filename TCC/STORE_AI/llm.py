@@ -2,6 +2,7 @@
 # irm https://ollama.com/install.ps1 | iex
 # pip install langchain-community
 # ollama run llama3
+# python -m TCC.main
 
 from langchain_community.llms import Ollama
 

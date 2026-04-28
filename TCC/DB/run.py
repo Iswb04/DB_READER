@@ -1,5 +1,5 @@
-from DB.create import criar_banco
-from DB.itens import inserir_item
+from TCC.DB.create import criar_banco
+from TCC.DB.itens import inserir_item
 
 criar_banco()
 
@@ -20,4 +20,4 @@ dados = [
 for item in dados:
     inserir_item(*item)
 
-# python -m DB.run
+# python -m TCC.DB.run

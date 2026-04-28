@@ -6,7 +6,7 @@ from datetime import datetime
 
 
 def salvar_csv(df):
-    pasta_destino = "DOWNLOADS"
+    pasta_destino = "TCC/DOWNLOADS"
     timestamp = datetime.now().strftime("%Y%m%d")
 
     if not os.path.exists(pasta_destino):

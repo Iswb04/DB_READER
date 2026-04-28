@@ -1,4 +1,0 @@
-CREATE USER 'app'@'localhost' IDENTIFIED BY '1234';
-GRANT ALL PRIVILEGES ON store.* TO 'app'@'localhost';
-FLUSH PRIVILEGES;
-

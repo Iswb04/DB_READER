@@ -11,7 +11,7 @@ def gerar_grafico(colunas, dados):
     df = pd.DataFrame(dados, columns=colunas)
 
     if len(df.columns) >= 2:
-        pasta_destino = "DOWNLOADS"
+        pasta_destino = "TCC/DOWNLOADS"
         if not os.path.exists(pasta_destino):
             os.makedirs(pasta_destino)
 
