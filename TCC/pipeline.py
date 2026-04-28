@@ -5,11 +5,11 @@ from STORE_AI.exports import salvar_csv
 
 def rodar_pipeline(pergunta):
 
-    # 1. IA gera SQL
+    # IA gera SQL
     sql = gerar_sql(pergunta)
     print("SQL gerado:", sql)
 
-    # 2. Executa no banco
+    # Executa no banco
     con = conectar()
     cursor = con.cursor()
 
@@ -19,21 +19,21 @@ def rodar_pipeline(pergunta):
 
     con.close()
 
-    # 3. Gera gráfico
+    # Gera gráfico
     question = input("Gerar gráfico? (S ou N): ").upper()
     if question in ["SIM", "S"]:
         df = gerar_grafico(colunas, dados)
     else:
         print("ok.")
 
-    # 4. Exporta CSV
+    # Exporta CSV
     question2 = input("Exportar CSV? (S ou N): ").upper()
     if question2 in ["SIM", "S"]:
         salvar_csv(df)
     else:
         print("ok.")
 
-    # 5. IA explica
+    # IA explica
     resposta = explicar(df)
 
     return resposta
