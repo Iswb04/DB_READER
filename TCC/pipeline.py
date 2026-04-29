@@ -3,37 +3,54 @@ from TCC.DB.create import conectar
 from TCC.STORE_AI.charts import gerar_grafico
 from TCC.STORE_AI.exports import salvar_csv
 
+
 def rodar_pipeline(pergunta):
 
-    # IA gera SQL
+    # 1. IA gera SQL
     sql = gerar_sql(pergunta)
-    print("SQL gerado:", sql)
+    print("Resposta:", sql)
 
-    # Executa no banco
+    # 2. valida segurança
+    if not sql.lower().strip().startswith("select"):
+        return "Apenas consultas SELECT são permitidas."
+
+    # 3. conecta no banco
     con = conectar()
     cursor = con.cursor()
 
-    cursor.execute(sql)
-    dados = cursor.fetchall()
-    colunas = [desc[0] for desc in cursor.description]
+    try:
+        # 4. executa SQL (ÚNICO lugar correto)
+        cursor.execute(sql)
 
-    con.close()
+        if cursor.description:
+            colunas = [desc[0] for desc in cursor.description]
+            dados = cursor.fetchall()
+        else:
+            colunas = []
+            dados = []
 
-    # Gera gráfico
-    question = input("Gerar gráfico? (S ou N): ").upper()
-    if question in ["SIM", "S"]:
-        df = gerar_grafico(colunas, dados)
-    else:
-        print("ok.")
+        con.close()
 
-    # Exporta CSV
-    question2 = input("Exportar CSV? (S ou N): ").upper()
-    if question2 in ["SIM", "S"]:
-        salvar_csv(df)
-    else:
-        print("ok.")
+    except Exception as e:
+        con.close()
+        print("\033[31mOcorreu um erro. Por favor, reformule sua pergunta.\033[0m")
+        print(f"\033[31mErro técnico:\033[0m {e}")
+        return None
 
-    # IA explica
-    resposta = explicar(df)
+    # 5. formata dados
+    dados_formatados = [
+        dict(zip(colunas, linha)) for linha in dados
+    ]
+
+    # 6. gráfico
+    if input("Gerar gráfico? (S ou N): ").upper() in ["S", "SIM"]:
+        gerar_grafico(colunas, dados)
+
+    # 7. CSV
+    if input("Exportar CSV? (S ou N): ").upper() in ["S", "SIM"]:
+        salvar_csv(colunas, dados)
+
+    # 8. explicação da IA
+    resposta = explicar(dados_formatados)
 
     return resposta

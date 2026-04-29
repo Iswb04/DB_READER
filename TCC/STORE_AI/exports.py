@@ -1,25 +1,22 @@
 import os
-import pandas as pd
+import csv
 from itertools import count
 from datetime import datetime
 
+def salvar_csv(colunas, dados):
+    pasta = "TCC/DOWNLOADS"
+    os.makedirs(pasta, exist_ok=True)
 
-
-def salvar_csv(df):
-    pasta_destino = "TCC/DOWNLOADS"
     timestamp = datetime.now().strftime("%Y%m%d")
 
-    if not os.path.exists(pasta_destino):
-        os.makedirs(pasta_destino)
-
-
     for i in count(1):
-        nome = f"dados{i}_{timestamp}.csv"
-        caminho_completo = os.path.join(pasta_destino, nome)
-        
-        if not os.path.exists(caminho_completo):
-            break 
+        caminho = os.path.join(pasta, f"dados{i}_{timestamp}.csv")
+        if not os.path.exists(caminho):
+            break
 
-    df.to_csv(caminho_completo, index=False)
-    print(f"CSV salvo com sucesso em: {caminho_completo}")
+    with open(caminho, mode="w", newline="", encoding="utf-8") as f:
+        writer = csv.writer(f, delimiter=";")
+        writer.writerow(colunas)
+        writer.writerows(dados)
 
+    print(f"CSV salvo em: {caminho}")

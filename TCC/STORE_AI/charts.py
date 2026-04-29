@@ -5,21 +5,21 @@ import os
 from itertools import count
 from datetime import datetime
 
-timestamp = datetime.now().strftime("%Y%m%d")
 def gerar_grafico(colunas, dados):
     df = pd.DataFrame(dados, columns=colunas)
 
     if len(df.columns) < 2:
-        print("Dados insuficientes para criação de gráfico!")
-        return df
+        print("Dados insuficientes para gráfico!")
+        return
 
-    pasta_destino = "TCC/DOWNLOADS"
-    if not os.path.exists(pasta_destino):
-        os.makedirs(pasta_destino)
+    pasta = "TCC/DOWNLOADS"
+    os.makedirs(pasta, exist_ok=True)
+
+    timestamp = datetime.now().strftime("%Y%m%d")
 
     for i in count(1):
-        caminho_arquivo = os.path.join(pasta_destino, f"grafico{i}_{timestamp}.png")
-        if not os.path.exists(caminho_arquivo):
+        caminho = os.path.join(pasta, f"grafico{i}_{timestamp}.png")
+        if not os.path.exists(caminho):
             break
 
     sns.set_theme(style="whitegrid")
@@ -28,20 +28,14 @@ def gerar_grafico(colunas, dados):
     sns.barplot(
         data=df,
         x=df.columns[0],
-        y=df.columns[1],
-        hue=df.columns[0],
-        palette="viridis"
+        y=df.columns[1]
     )
 
-    plt.title(f"Análise de Dados - Gráfico {i}", fontsize=15)
-    plt.xlabel(df.columns[0].capitalize())
-    plt.ylabel(df.columns[1].capitalize())
+    plt.title("Gráfico de Dados")
     plt.xticks(rotation=45)
     plt.tight_layout()
 
-    plt.savefig(caminho_arquivo)
+    plt.savefig(caminho)
     plt.close()
 
-    print(f"Gráfico salvo com sucesso em: {caminho_arquivo}")
-
-    return df
+    print(f"Gráfico salvo em: {caminho}")
