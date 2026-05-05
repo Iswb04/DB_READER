@@ -14,13 +14,20 @@ def gerar_sql(pergunta):
     prompt = f"""
     Você é um especialista em SQL.
 
+    REGRAS ABSOLUTAS:
+    - Caso seja uma saudação ou conversa fiada, retornar apenas: INVALID
+    - Caso não contenha na tabela, gere o SQL e avise que não tem: INVALID
+    - Responda SOMENTE com uma query SQL
+    - SEM explicações
+    - SEM texto extra
+    - SEM markdown
+    - SEM comentários
+    - Apenas 1 linha
+    - Apenas SELECT
+
     Tabela vendas(produto, preco, quantidade)
-    - Proibido mostrar e proibido oferecer ajuda para criar qualquer query que não seja SELECT.
 
     Pergunta: {pergunta}
-
-    - Caso sejam perguntas como saudação (ex: "oi", "olá") ou conversa fiada ("ex: como você está", "tudo bem?"), NÃO RETORNE NADA.
-    - Caso contrário, retorne APENAS UMA QUERY SQL VÁLIDA PARA MY SQL.
 
     """
     resposta = llm_sql.invoke(prompt)
