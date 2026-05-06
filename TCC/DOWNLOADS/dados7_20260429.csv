@@ -1,3 +1,0 @@
-produto;SUM(quantidade);SUM(preco * quantidade)
-Mouse;2;240.00
-Teclado;1;250.00
