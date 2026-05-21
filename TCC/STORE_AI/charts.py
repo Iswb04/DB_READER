@@ -9,7 +9,7 @@ def gerar_grafico(colunas, dados):
     df = pd.DataFrame(dados, columns=colunas)
 
     if len(df.columns) < 2:
-        print("Dados insuficientes para gráfico!")
+        print("Dados insuficientes para gráfico! Contém menos de duas colunas.")
         return
 
     pasta = "TCC/DOWNLOADS"

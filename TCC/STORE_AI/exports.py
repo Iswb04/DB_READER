@@ -7,7 +7,7 @@ from datetime import datetime
 def salvar_csv(colunas, dados):
 
     if not colunas or not dados:
-        print("Dados insuficientes para exportar CSV")
+        print("Dados insuficientes para exportar CSV.")
 
     pasta = "TCC/DOWNLOADS"
     os.makedirs(pasta, exist_ok=True)

@@ -1,6 +1,11 @@
 python -m TCC.main
-python -m TCC.DB.connect
-
+python -m TCC.DB.connect  (verificar no mysql)
+pip install langchain-ollama
+ollama run llama3:8b (mais leve que o ollama 3)
+ollama list 
+pip install seaborn matplotlib
+pip install pandas
+python -m TCC.main
 
 TCC/
 │
@@ -40,6 +45,3 @@ ________________________________________________________________________________
         return "Apenas consultas SELECT são permitidas."
 
 
-
-ollama run llama3:8b (mais leve que o ollama 3)
-ollama list 
