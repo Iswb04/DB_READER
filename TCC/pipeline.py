@@ -15,7 +15,7 @@ def rodar_pipeline(pergunta):
         return "Apenas consultas SELECT são permitidas."
 
     # 3. conecta no banco
-    con = conectar()
+    con = conectar("store")
     cursor = con.cursor()
 
     try:
@@ -30,6 +30,11 @@ def rodar_pipeline(pergunta):
             dados = []
 
         con.close()
+
+        if not dados:
+            print("Resultado inválido ou não encontrado!")
+            return ""
+
 
     except Exception as e:
         con.close()
