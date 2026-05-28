@@ -25,6 +25,7 @@ def salvar_csv(colunas, dados):
             writer.writerow(colunas)
             writer.writerows(dados)
 
+        print(f"CSV salvo em: {caminho}")
         return f"CSV salvo em: {caminho}"
 
     except Exception as e:

@@ -6,23 +6,21 @@ import queue
 import builtins
 import time
 import os
+import re
+import ctypes
 
 # Ajustar o path para poder importar o TCC
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
 from TCC.pipeline import rodar_pipeline
 
-import re
-
-import ctypes
-
 class GUI_Terminal(cctk.CTk):
     def __init__(self):
         super().__init__()
 
         self.title("DB Reader")
-        self.geometry("450x500") # Aumentado para a direita
-        self.resizable(False, False) # Bloqueado mexer no tamanho
+        self.geometry("450x500") 
+        self.resizable(False, False) 
         cctk.set_appearance_mode("dark")
 
         # Regex para remover códigos ANSI
@@ -40,7 +38,8 @@ class GUI_Terminal(cctk.CTk):
             fg_color="#1e1e1e"
         )
         self.textbox.grid(row=0, column=0, padx=10, pady=(10, 5), sticky="nsew")
-        self.textbox.tag_config("red", foreground="#ff4d4d") # Definir tag vermelha
+        self.textbox.tag_config("red", foreground="#ff4d4d") 
+        self.textbox.tag_config("green", foreground="#4ade80") 
         self.textbox.configure(state="disabled")
 
         # Frame para entrada com prompt e botões
@@ -68,7 +67,7 @@ class GUI_Terminal(cctk.CTk):
             text="Buscar", 
             width=60, 
             command=self.processar_entrada,
-            fg_color="#4a4a4a", # Cinza
+            fg_color="#4a4a4a",
             hover_color="#5a5a5a"
         )
         self.btn_buscar.grid(row=0, column=2, padx=2, pady=5)
@@ -122,8 +121,14 @@ class GUI_Terminal(cctk.CTk):
                 
                 self.textbox.configure(state="normal")
                 if self.thinking_line_index:
-                    self.textbox.delete(f"{self.thinking_line_index} linestart", f"{self.thinking_line_index} lineend")
-                    self.textbox.insert(self.thinking_line_index, dots_str)
+                    # Se for a animação de insights (mesma linha), não usar newline
+                    content = self.textbox.get(f"{self.thinking_line_index} linestart", f"{self.thinking_line_index} lineend")
+                    if "Gerando insights" in content:
+                        self.textbox.delete(f"{self.thinking_line_index} +16c", f"{self.thinking_line_index} lineend")
+                        self.textbox.insert(f"{self.thinking_line_index} +16c", dots_str, "green")
+                    else:
+                        self.textbox.delete(f"{self.thinking_line_index} linestart", f"{self.thinking_line_index} lineend")
+                        self.textbox.insert(self.thinking_line_index, dots_str)
                 else:
                     self.textbox.insert(tk.END, "\n" + dots_str)
                     self.thinking_line_index = self.textbox.index("end-1c linestart")
@@ -133,7 +138,11 @@ class GUI_Terminal(cctk.CTk):
         else:
             if self.thinking_line_index:
                 self.textbox.configure(state="normal")
-                self.textbox.delete(f"{self.thinking_line_index} linestart", f"{self.thinking_line_index} lineend+1c")
+                content = self.textbox.get(f"{self.thinking_line_index} linestart", f"{self.thinking_line_index} lineend")
+                if "Gerando insights" in content:
+                    self.textbox.delete(f"{self.thinking_line_index} +16c", f"{self.thinking_line_index} lineend")
+                else:
+                    self.textbox.delete(f"{self.thinking_line_index} linestart", f"{self.thinking_line_index} lineend+1c")
                 self.thinking_line_index = None
                 self.textbox.configure(state="disabled")
 
@@ -156,8 +165,10 @@ class GUI_Terminal(cctk.CTk):
     def custom_input(self, prompt=""):
         self.is_thinking = False
         if prompt:
-            clean_prompt = self.strip_ansi(prompt)
-            self.output_queue.put(clean_prompt)
+            # Se o prompt for "Você:", não mostramos na tela, pois processar_entrada fará isso
+            if "Você:" not in prompt:
+                clean_prompt = self.strip_ansi(prompt)
+                self.output_queue.put(clean_prompt)
         
         self.after(0, lambda: self.entry.configure(state="normal"))
         self.after(0, lambda: self.btn_buscar.configure(state="normal"))
@@ -166,7 +177,7 @@ class GUI_Terminal(cctk.CTk):
         while True:
             try:
                 val = self.input_queue.get(timeout=0.1)
-                self.thinking_start_time = time.time() # Reset do tempo
+                self.thinking_start_time = time.time()
                 self.is_thinking = True
                 return val
             except queue.Empty:
@@ -176,22 +187,9 @@ class GUI_Terminal(cctk.CTk):
         texto = self.entry.get()
         if not texto.strip(): return
         
-        # Comando para limpar o terminal
         if texto.strip().lower() == "clear":
             self.textbox.configure(state="normal")
-            
-            # Pegar a última linha para ver se é um prompt
-            linhas = self.textbox.get("1.0", tk.END).splitlines()
-            ultimo_prompt = ""
-            for linha in reversed(linhas):
-                if "Você:" in linha or "Gerar gráfico?" in linha or "Exportar CSV?" in linha:
-                    ultimo_prompt = linha
-                    break
-            
             self.textbox.delete("1.0", tk.END)
-            if ultimo_prompt:
-                self.textbox.insert(tk.END, ultimo_prompt)
-            
             self.textbox.configure(state="disabled")
             self.entry.delete(0, tk.END)
             return
@@ -200,29 +198,31 @@ class GUI_Terminal(cctk.CTk):
         self.entry.configure(state="disabled")
         self.btn_buscar.configure(state="disabled")
         
-        self.output_queue.put(texto + "\n")
+        # Mostra "Você: [texto]" no terminal
+        self.output_queue.put(f"\nVocê: {texto}\n")
+        
         self.input_queue.put(texto)
-        self.thinking_start_time = time.time() # Início da contagem
+        self.thinking_start_time = time.time()
         self.is_thinking = True
 
     def cancelar_comando(self):
         self.is_thinking = False
+
         self.output_queue.put("\nBusca interrompida pelo usuário!\n")
-        # Forçar uma exceção na thread worker para simular Ctrl+C
+
         if self.worker_thread.is_alive():
             thread_id = self.worker_thread.ident
             res = ctypes.pythonapi.PyThreadState_SetAsyncExc(ctypes.c_long(thread_id), ctypes.py_object(KeyboardInterrupt))
             if res > 1:
                 ctypes.pythonapi.PyThreadState_SetAsyncExc(thread_id, 0)
-        
-        # Limpar filas
+
         while not self.input_queue.empty():
             self.input_queue.get()
-        
+
         # Reabilitar campos após cancelamento
         self.after(0, lambda: self.entry.configure(state="normal"))
         self.after(0, lambda: self.btn_buscar.configure(state="normal"))
-        
+
     def update_textbox(self):
         while not self.output_queue.empty():
             msg = self.output_queue.get()
@@ -230,9 +230,14 @@ class GUI_Terminal(cctk.CTk):
             
             self.textbox.configure(state="normal")
             
-            # Checar se a mensagem deve ser vermelha
-            if "INVALID" in clean_msg or "Resultado inválido ou não encontrado!" in clean_msg or "Erro técnico:" in clean_msg or "Busca interrompida pelo usuário!" in clean_msg:
+            if any(x in clean_msg for x in ["INVALID", "Resultado inválido ou não encontrado!", "Erro técnico:", "Busca interrompida pelo usuário!"]):
                 self.textbox.insert(tk.END, clean_msg, "red")
+            elif any(x in clean_msg for x in ["Gerar gráfico?", "Exportar CSV?", "Gerando insights"]):
+                self.textbox.insert(tk.END, clean_msg, "green")
+                if "Gerando insights" in clean_msg:
+                    self.is_thinking = True
+                    self.thinking_start_time = time.time() - 3.0
+                    self.thinking_line_index = self.textbox.index("end-1c linestart")
             else:
                 self.textbox.insert(tk.END, clean_msg)
                 
@@ -243,9 +248,7 @@ class GUI_Terminal(cctk.CTk):
     def run_pipeline_loop(self):
         while True:
             try:
-                # O input() agora chama custom_input que habilita os campos
                 pergunta = input("\nVocê: ")
-                
                 resposta = rodar_pipeline(pergunta)
                 print(resposta)
             except KeyboardInterrupt:

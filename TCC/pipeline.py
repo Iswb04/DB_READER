@@ -56,6 +56,7 @@ def rodar_pipeline(pergunta):
         salvar_csv(colunas, dados)
 
     # 8. explicação da IA
+    print("\nGerando insights", end="")
     resposta = explicar(dados_formatados)
 
     return resposta
