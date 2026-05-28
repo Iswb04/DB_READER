@@ -26,7 +26,7 @@ def gerar_sql(pergunta):
     - Responda SOMENTE com uma query SQL válida, sem blocos de código markdown ou aspas.
     - SEM explicações, SEM texto extra, SEM comentários, em apenas 1 linha e utilizando apenas SELECT.
     - Se a intenção do usuário não for um comando de seleção (SELECT), retornar apenas: INVALID
-    - Se o usuário digitar por exemplo "mouse razer", saiba que "mouse" é o produto e "razer" é a marca.
+    - Se o usuário digitar por exemplo "mouse multilaser", saiba que "mouse" é o produto e "multilaser" é a marca.
     - Se a busca for pela quantidade de itens de uma marca ou categoria, use obrigatoriamente o GROUP BY seguindo o exemplo: SELECT produto, SUM(quantidade) FROM vendas WHERE marca = 'Samsung' GROUP BY produto
     - Se o usuário quiser listar o produto, a quantidade individual e a soma total de todos os itens juntos na mesma busca, utilize a função de janela: SELECT produto, quantidade, SUM(quantidade) OVER() AS quantidade_total FROM vendas
     - Quando for informado que o banco de dados retornou uma lista vazia, sua única função é gerar uma frase curta e clara avisando que não há itens com essa característica disponível no momento.

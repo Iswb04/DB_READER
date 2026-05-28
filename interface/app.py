@@ -102,6 +102,7 @@ class GUI_Terminal(cctk.CTk):
         self.thinking_start_time = 0
         self.thinking_dots = 0
         self.thinking_line_index = None
+        self.waiting_for_insight = False
 
         # Iniciar a lógica do pipeline
         self.iniciar_worker()
@@ -136,13 +137,13 @@ class GUI_Terminal(cctk.CTk):
                 self.textbox.see(tk.END)
                 self.textbox.configure(state="disabled")
         else:
-            if self.thinking_line_index:
+            if self.thinking_line_index and not self.waiting_for_insight:
                 self.textbox.configure(state="normal")
-                content = self.textbox.get(f"{self.thinking_line_index} linestart", f"{self.thinking_line_index} lineend")
-                if "Gerando insights" in content:
-                    self.textbox.delete(f"{self.thinking_line_index} +16c", f"{self.thinking_line_index} lineend")
-                else:
+                # Deleta a linha inteira da animação ao parar (exceto se for insight, o update_textbox cuida)
+                try:
                     self.textbox.delete(f"{self.thinking_line_index} linestart", f"{self.thinking_line_index} lineend+1c")
+                except:
+                    pass
                 self.thinking_line_index = None
                 self.textbox.configure(state="disabled")
 
@@ -229,17 +230,68 @@ class GUI_Terminal(cctk.CTk):
             clean_msg = self.strip_ansi(msg)
             
             self.textbox.configure(state="normal")
+
+            # Remove a animação de "pensando" (pontinhos) se houver uma mensagem real vindo
+            if self.thinking_line_index and not self.waiting_for_insight and clean_msg.strip():
+                try:
+                    # Tenta remover a linha da animação e a quebra de linha que a precede
+                    self.textbox.delete(f"{self.thinking_line_index} linestart -1c", f"{self.thinking_line_index} lineend")
+                except:
+                    try:
+                        self.textbox.delete(f"{self.thinking_line_index} linestart", f"{self.thinking_line_index} lineend+1c")
+                    except:
+                        pass
+                self.thinking_line_index = None
             
-            if any(x in clean_msg for x in ["INVALID", "Resultado inválido ou não encontrado!", "Erro técnico:", "Busca interrompida pelo usuário!"]):
+            if any(x in clean_msg for x in ["INVALID", "Resultado inválido ou não encontrado!", "Erro técnico:", "Busca interrompida pelo usuário!", "Erro no loop:"]):
                 self.textbox.insert(tk.END, clean_msg, "red")
+                self.is_thinking = False
+                self.waiting_for_insight = False
+                # Limpeza extra se houver erro durante o insight
+                if "insight_line" in self.textbox.mark_names():
+                    self.textbox.mark_unset("insight_line")
+                self.thinking_line_index = None
             elif any(x in clean_msg for x in ["Gerar gráfico?", "Exportar CSV?", "Gerando insights"]):
                 self.textbox.insert(tk.END, clean_msg, "green")
                 if "Gerando insights" in clean_msg:
                     self.is_thinking = True
+                    self.waiting_for_insight = True
                     self.thinking_start_time = time.time() - 3.0
                     self.thinking_line_index = self.textbox.index("end-1c linestart")
+                    self.textbox.mark_set("insight_line", "end-1c linestart")
+                    self.textbox.mark_gravity("insight_line", tk.LEFT)
             else:
-                self.textbox.insert(tk.END, clean_msg)
+                if self.waiting_for_insight and clean_msg.strip():
+                    # Para a animação e limpa qualquer rastro dela
+                    self.is_thinking = False
+                    
+                    # Deletar APENAS a linha que contém "Gerando insights"
+                    if "insight_line" in self.textbox.mark_names():
+                        try:
+                            # Verifica se a marca ainda é válida e deleta a linha específica
+                            line_content = self.textbox.get("insight_line", "insight_line lineend")
+                            if "Gerando insights" in line_content:
+                                self.textbox.delete("insight_line", "insight_line lineend+1c")
+                            self.textbox.mark_unset("insight_line")
+                        except:
+                            pass
+                    
+                    # Deletar APENAS a linha da animação (pontinhos) se ela existir e for diferente
+                    if self.thinking_line_index:
+                        try:
+                            line_content = self.textbox.get(f"{self.thinking_line_index} linestart", f"{self.thinking_line_index} lineend")
+                            # Só deleta se a linha for composta apenas por pontos ou estiver vazia
+                            if all(c == "." for c in line_content.strip()) or not line_content.strip():
+                                self.textbox.delete(f"{self.thinking_line_index} linestart", f"{self.thinking_line_index} lineend+1c")
+                        except:
+                            pass
+                        self.thinking_line_index = None
+                    
+                    self.textbox.insert(tk.END, "\nInsight: ", "green")
+                    self.textbox.insert(tk.END, f"{clean_msg.strip()}\n")
+                    self.waiting_for_insight = False
+                elif not self.waiting_for_insight or clean_msg.strip():
+                    self.textbox.insert(tk.END, clean_msg)
                 
             self.textbox.see(tk.END)
             self.textbox.configure(state="disabled")

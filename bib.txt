@@ -1,0 +1,10 @@
+# bibliotecas
+
+pip install customtkinter
+pip install mysql-connector-python
+pip install pandas
+pip install seaborn
+pip install matplotlib
+pip install langchain-ollama
+pip install langchain-community
+ollama run llama3.1
