@@ -43,7 +43,7 @@ def gerar_sql(pergunta):
 
 def explicar(dados):
     prompt = f"""
-    Analise os dados abaixo, e explique em UM PARÁGRAFO em português:
+    Analise os dados abaixo, e explique em UM PARÁGRAFO pequeno em português:
 
     - insights básicos
 
